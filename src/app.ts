@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import { connectToDatabase } from "./services/database";
 import { router as quotesRouter } from "./routes/quotes";
 import { router as systemsRouter } from "./routes/systems";
+import { router as booksRouter } from "./routes/books";
 
 const app: Application = express();
 const PORT = process.env.PORT || 8080; // Use environment variable for flexibility, fallback to 8080
@@ -16,6 +17,7 @@ const startServer = async () => {
 		app.use(express.json()); // Global middleware for parsing JSON
 		app.use("/quotes", quotesRouter);
 		app.use("/systems", systemsRouter);
+		app.use("/books", booksRouter);
 
 		// Start the server
 		app.listen(PORT, () => {

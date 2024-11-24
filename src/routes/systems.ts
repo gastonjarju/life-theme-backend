@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { createSystem, getAllSystems, getSystemById, getSystemByName } from "../controllers/systems";
+import { createSystem, deleteSystemById, getAllSystems, getSystemById, getSystemByName, updateSystembyId } from "../controllers/systems";
 
 export const router = Router();
 
 router.get("/", getAllSystems);
-router.get("/:name", getSystemByName)
+router.get("/:name", getSystemByName);
+// router.get("/:id", getSystemById);
+router.put("/:id", updateSystembyId);
 router.post("/", createSystem);
+router.delete("/:id", deleteSystemById)
