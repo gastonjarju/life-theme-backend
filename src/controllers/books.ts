@@ -1,25 +1,53 @@
 import { Request, Response } from "express";
-import { getCollection } from "../services/database";
 import { Book } from "../types/books";
 import { ObjectId } from "mongodb";
+import { getBookCollection } from "../collection/book";
 
-// GET: Get all books
-export const getAllBooks = async (_req: Request, res: Response) => {
+
+// GET: Get all books with optional query parameters
+export const getAllBooks = async (req: Request, res: Response) => {
 	try {
-		const collection = getCollection("books");
-		const books = await collection.find({}).toArray();
+		const collection = getBookCollection();
+
+		// Build the filter object based on the query params
+		const filter: Record<string, any> = {};
+
+		// Add filters if query parameters are present
+		if (req.query.author) {
+			filter.author = new RegExp(req.query.author as string, "i"); // Case-insensitive match for author
+		}
+
+		if (req.query.title) {
+			filter.title = new RegExp(req.query.title as string, "i"); // Case-insensitive match for title
+		}
+
+		if (req.query.system) {
+			filter.system = req.query.system; // Exact match for system
+		}
+
+		if (req.query.inInventory) {
+			filter["status.inInventory"] = req.query.inInventory === "true"; // Convert string 'true' to boolean
+		}
+
+		if (req.query.isRead) {
+			filter["status.isRead"] = req.query.isRead === "true"; // Convert string 'true' to boolean
+		}
+
+		// Fetch the books from the MongoDB collection based on the filter
+		const books = await collection.find(filter).toArray();
+
+		// Type assertion: cast books as Book[] to satisfy the TypeScript type
 		res.status(200).json(books);
 	} catch (error: any) {
-		res.status(500).json({ error: `Error in fetching books${error.message}` });
+		res.status(500).json({ error: `Error in fetching books: ${error.message}` });
 	}
 };
-
 // GET: Get one book by Id
 
 // POST: Create a new book document or many book documents
 export const createBook = async (req: Request, res: Response) => {
 	const book: Book[] | Book = req.body;
-	const collection = getCollection("books");
+	const collection = getBookCollection();
 	let result;
 	try {
 		if (Array.isArray(book)) {
@@ -44,7 +72,7 @@ export const createBook = async (req: Request, res: Response) => {
 export const updateBookById = async (req: Request, res: Response) => {
 	const updateBookData = req.body;
 	const idOrIds = req.params.id;
-	const collection = getCollection("books");
+	const collection = getBookCollection();
 	if (!updateBookData || Object.values(idOrIds).length === 0) {
 		res.status(400).json({ error: "No data provided to update" });
 		return;
@@ -84,5 +112,24 @@ export const updateBookById = async (req: Request, res: Response) => {
 	}
 };
 
+//DELETE: Delete one book by ID
+export const deleteBookById = async (req: Request, res: Response) => {
+	const id = req.params.id;
 
-//DELETE: Delete one or many books
+	if (!ObjectId.isValid(id)) {
+		res.status(400).json({ error: "Invalid ID format" });
+		return;
+	}
+	try {
+		const collection = getBookCollection();
+		const result = await collection.deleteOne({ _id: new ObjectId(id) });
+
+		if (result.deletedCount > 0) {
+			res.status(202).json({ message: `Book with id ${id} deleted successfully` });
+		} else {
+			res.status(404).json({ error: `Book with id ${id} not found` });
+		}
+	} catch (error: any) {
+		res.status(400).json({ error: `Error deleteing quote: ${error.message}` });
+	}
+};

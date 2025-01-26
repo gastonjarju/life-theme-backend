@@ -1,8 +1,9 @@
 import express, { Application } from "express";
-import { connectToDatabase } from "./services/database";
+
 import { router as quotesRouter } from "./routes/quotes";
 import { router as systemsRouter } from "./routes/systems";
 import { router as booksRouter } from "./routes/books";
+import { connectToDatabase } from "./services/mongo_db";
 
 const app: Application = express();
 const PORT = process.env.PORT || 8080; // Use environment variable for flexibility, fallback to 8080

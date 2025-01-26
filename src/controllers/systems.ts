@@ -1,5 +1,5 @@
 import { Response, Request } from "express";
-import { getCollection } from "../services/database";
+import { getCollection } from "../services/mongo_db";
 import { System } from "../types/systems";
 import { ObjectId } from "mongodb";
 
