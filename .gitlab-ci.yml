@@ -1,0 +1,31 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build_job:
+  stage: build
+  script:
+    - echo "Installing dependencies..."
+    - npm install
+    - echo "Building backend..."
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+test_job:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - npm test
+  dependencies:
+    - build_job
+
+deploy_job:
+  stage: deploy
+  script:
+    - echo "Deploying backend..."
+    - echo "Deployment successful!"
+  only:
+    - main
